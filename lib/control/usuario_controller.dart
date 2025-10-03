@@ -5,6 +5,7 @@ class UsuarioController {
   factory UsuarioController() => _instance;
   UsuarioController._internal();
 
+  // Lista de usuários mockados enquanto não há backend
   final List<Map<String, dynamic>> _usuariosMockados = [
     {
       'id': 1,
@@ -26,20 +27,16 @@ class UsuarioController {
     }
   ];
 
-  // Usuário logado atualmente
   Usuario? _usuarioLogado;
-  int _proximoId = 4; // Para novos usuários
 
-  // Getters
+  int _proximoId = 4;
+
   Usuario? get usuarioLogado => _usuarioLogado;
   bool get estaLogado => _usuarioLogado != null;
   List<Usuario> get todosUsuarios => _usuariosMockados.map((json) => Usuario.fromJson(json)).toList();
 
   // Método para fazer login
   Future<bool> login(String email, String senha) async {
-    // Simula delay da API
-    await Future.delayed(const Duration(milliseconds: 500));
-    
     try {
       final usuarioJson = _usuariosMockados.firstWhere(
         (user) => user['email'] == email && user['senha'] == senha,
@@ -54,16 +51,11 @@ class UsuarioController {
 
   // Método para fazer cadastro
   Future<bool> cadastrar(String nome, String email, String senha) async {
-    // Simula delay da API
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Verifica se o email já existe
     final emailJaExiste = _usuariosMockados.any((user) => user['email'] == email);
     if (emailJaExiste) {
-      return false;
+      return false; // Não devemos repetir emails
     }
 
-    // Cria novo usuário
     final novoUsuario = {
       'id': _proximoId++,
       'nome': nome,
@@ -71,11 +63,9 @@ class UsuarioController {
       'senha': senha,
     };
 
-    // Adiciona à lista de usuários mockados
-    _usuariosMockados.add(novoUsuario);
-    
-    // Loga automaticamente após o cadastro
-    _usuarioLogado = Usuario.fromJson(novoUsuario);
+    _usuariosMockados.add(novoUsuario); // Adiciona à lista de usuários mockados
+    _usuarioLogado = Usuario.fromJson(novoUsuario); // Loga automaticamente após o cadastro
+
     return true;
   }
 
@@ -83,29 +73,11 @@ class UsuarioController {
   void logout() {
     _usuarioLogado = null;
   }
-
-  // Método para verificar se email já existe
-  bool emailJaExiste(String email) {
-    return _usuariosMockados.any((user) => user['email'] == email);
-  }
-
-  // Método para buscar usuário por email
-  Usuario? buscarPorEmail(String email) {
-    try {
-      final usuarioJson = _usuariosMockados.firstWhere(
-        (user) => user['email'] == email,
-      );
-      return Usuario.fromJson(usuarioJson);
-    } catch (e) {
-      return null;
-    }
-  }
-
+  
+  // Método para atualizar dados do usuário
   Future<bool> atualizarUsuario(String nome, String email) async {
     if (_usuarioLogado == null) return false;
-    
-    await Future.delayed(const Duration(milliseconds: 500));
-    
+        
     final emailExisteEmOutroUsuario = _usuariosMockados.any(
       (user) => user['email'] == email && user['id'] != _usuarioLogado!.id,
     );

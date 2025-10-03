@@ -4,6 +4,8 @@ import '../control/usuario_controller.dart';
 
 class PerguntaChangeNotifier extends ChangeNotifier {
   final UsuarioController _usuarioController = UsuarioController();
+
+  // Lista de perguntas mockadas enquanto não há backend
   final List<Pergunta> _perguntas = [
     Pergunta(
       id: 1,
@@ -127,43 +129,6 @@ class PerguntaChangeNotifier extends ChangeNotifier {
       horaResposta: '${agora.hour.toString().padLeft(2, '0')}:${agora.minute.toString().padLeft(2, '0')}',
     );
 
-    notifyListeners();
-    return true;
-  }
-
-  Pergunta? buscarPerguntaPorId(int id) {
-    try {
-      return _perguntas.firstWhere((p) => p.id == id);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  bool podeResponder() {
-    return _usuarioController.estaLogado;
-  }
-
-  bool podeCriarPergunta() {
-    return _usuarioController.estaLogado;
-  }
-
-  bool removerPergunta(int perguntaId) {
-    final usuario = _usuarioController.usuarioLogado;
-    if (usuario == null) {
-      return false;
-    }
-
-    final index = _perguntas.indexWhere((p) => p.id == perguntaId);
-    if (index == -1) {
-      return false;
-    }
-
-    final pergunta = _perguntas[index];
-    if (pergunta.usuarioId != usuario.id) {
-      return false;
-    }
-
-    _perguntas.removeAt(index);
     notifyListeners();
     return true;
   }

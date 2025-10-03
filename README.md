@@ -1,3 +1,3 @@
-# perguntas_respostas
+# responde_ai
 
 A new Flutter project.

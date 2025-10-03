@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:perguntas_respostas/view/perguntas/widgets/widgets.dart';
+import 'package:responde_ai/view/perguntas/widgets/widgets.dart';
 import '../../control/pergunta_inherited_widget.dart';
 import '../../control/usuario_controller.dart';
 import '../../model/pergunta.dart';

@@ -1,4 +1,4 @@
-package com.example.perguntas_respostas
+package com.example.responde_ai
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -50,6 +50,7 @@ class _PerfilLogadoViewState extends State<PerfilLogadoView> {
     super.dispose();
   }
 
+  // Função para salvar as alterações do usuário
   void _salvarAlteracoes() async {
     if (widget.onUpdateUser == null) return;
 
@@ -187,7 +188,6 @@ class _PerfilLogadoViewState extends State<PerfilLogadoView> {
 
                   const SizedBox(height: 24),
 
-                  // Campo Email
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -294,7 +294,7 @@ class _PerfilLogadoViewState extends State<PerfilLogadoView> {
 
                   const Spacer(),
 
-                  // Botão Sair
+                  // Botão de logout
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:perguntas_respostas/view/perguntas/widgets/widgets.dart';
+import 'package:responde_ai/view/perguntas/widgets/widgets.dart';
 import '../../control/pergunta_inherited_widget.dart';
 import '../../control/usuario_controller.dart';
 import '../../model/pergunta.dart';
@@ -28,6 +28,8 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
     super.dispose();
   }
 
+
+  // TODO: quando houver integração com backend, filtrar as perguntas do usuario logado diretamente na consulta
   List<Pergunta> _filtrarMinhasPerguntas(
     List<Pergunta> todasPerguntas,
     bool respondidas,
@@ -47,7 +49,7 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
 
   @override
   Widget build(BuildContext context) {
-    // Verifica se o usuário está logado
+    // Se o usuario nao estiver logado, mostra a tela informativa para login
     if (!_usuarioController.estaLogado) {
       return Scaffold(
         backgroundColor: const Color(0xFFE8E8E8),

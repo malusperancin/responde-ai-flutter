@@ -16,10 +16,9 @@ class PerfilDeslogadoView extends StatelessWidget {
       backgroundColor: const Color(0xFFEEEEEE),
       body: Stack(
         children: [
-          // Estrutura base com cabeçalho azul e área cinza
           Column(
             children: [
-              // Cabeçalho azul - ocupa cerca de 60% da tela
+              // Área azul - ocupa cerca de 60% da tela
               Container(
                 width: double.infinity,
                 height: MediaQuery.of(context).size.height * 0.6,
@@ -52,7 +51,7 @@ class PerfilDeslogadoView extends StatelessWidget {
           Positioned(
             left: 32,
             right: 32,
-            bottom: MediaQuery.of(context).size.height * 0.4, // Posicionado sobre a linha divisória
+            bottom: MediaQuery.of(context).size.height * 0.4,
             child: Container(
               width: double.infinity,
               height: 56,
@@ -69,7 +68,6 @@ class PerfilDeslogadoView extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // Botão Login
                   Expanded(
                     child: TextButton(
                       onPressed: onLoginPressed,
@@ -96,14 +94,13 @@ class PerfilDeslogadoView extends StatelessWidget {
                     ),
                   ),
                   
-                  // Linha vertical separadora
+                  // Divisor vertical
                   Container(
                     width: 1,
                     height: 36,
                     color: const Color(0xFFDDDDDD),
                   ),
                   
-                  // Botão Cadastre-se
                   Expanded(
                     child: TextButton(
                       onPressed: onCadastroPressed,
