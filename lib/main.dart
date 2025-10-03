@@ -4,17 +4,17 @@ import 'control/pergunta_inherited_widget.dart';
 import 'view/view.dart';
 
 void main() {
-  runApp(const PerguntasRespostasApp());
+  runApp(const RespondeAiApp());
 }
 
-class PerguntasRespostasApp extends StatefulWidget {
-  const PerguntasRespostasApp({super.key});
+class RespondeAiApp extends StatefulWidget {
+  const RespondeAiApp({super.key});
 
   @override
-  State<PerguntasRespostasApp> createState() => _PerguntasRespostasAppState();
+  State<RespondeAiApp> createState() => _RespondeAiAppState();
 }
 
-class _PerguntasRespostasAppState extends State<PerguntasRespostasApp> {
+class _RespondeAiAppState extends State<RespondeAiApp> {
   late final PerguntaChangeNotifier _perguntaChangeNotifier;
 
   @override

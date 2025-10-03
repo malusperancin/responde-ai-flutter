@@ -1,6 +1,6 @@
 {
-    "name": "perguntas_respostas",
-    "short_name": "perguntas_respostas",
+    "name": "responde_ai",
+    "short_name": "responde_ai",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

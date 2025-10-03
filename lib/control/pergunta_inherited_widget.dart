@@ -13,10 +13,4 @@ class PerguntaInheritedWidget extends InheritedNotifier<PerguntaChangeNotifier> 
         .dependOnInheritedWidgetOfExactType<PerguntaInheritedWidget>()!
         .notifier!;
   }
-
-  static PerguntaChangeNotifier? maybeOf(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<PerguntaInheritedWidget>()
-        ?.notifier;
-  }
 }

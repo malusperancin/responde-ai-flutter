@@ -68,10 +68,9 @@ class _PerfilCadastroViewState extends State<PerfilCadastroView> {
       backgroundColor: const Color(0xFFEEEEEE),
       body: Stack(
         children: [
-          // Estrutura base com cabeçalho azul e área cinza
           Column(
             children: [
-              // Cabeçalho azul - ocupa cerca de 60% da tela
+              // Área azul - ocupa metade da tela
               Container(
                 width: double.infinity,
                 height: MediaQuery.of(context).size.height * 0.5,

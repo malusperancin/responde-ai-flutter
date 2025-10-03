@@ -87,7 +87,7 @@ class _PerguntaRespostaCardState extends State<PerguntaRespostaCard> {
                 hora: widget.pergunta.hora,
                 texto: widget.pergunta.descricao,
               ),
-              if (!_expandir && widget.onResponder != null)
+              if (!_expandir && widget.onResponder != null) // botão responder
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -125,7 +125,7 @@ class _PerguntaRespostaCardState extends State<PerguntaRespostaCard> {
                     ),
                   ),
                 ),
-              if (_expandir)
+              if (_expandir) // deve exibir o campo de resposta
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
