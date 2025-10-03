@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'control/pergunta_change_notifier.dart';
 import 'control/pergunta_inherited_widget.dart';
-import 'view/apresentacao_view.dart';
-import 'view/perguntas_view.dart';
-import 'view/perfil_view.dart';
-import 'view/minhas_perguntas_view.dart';
+import 'view/view.dart';
 
 void main() {
   runApp(const PerguntasRespostasApp());
 }
 
 class PerguntasRespostasApp extends StatefulWidget {
-  const PerguntasRespostasApp({Key? key}) : super(key: key);
+  const PerguntasRespostasApp({super.key});
 
   @override
   State<PerguntasRespostasApp> createState() => _PerguntasRespostasAppState();
@@ -46,7 +43,7 @@ class _PerguntasRespostasAppState extends State<PerguntasRespostasApp> {
 }
 
 class AppNavigator extends StatefulWidget {
-  const AppNavigator({Key? key}) : super(key: key);
+  const AppNavigator({super.key});
 
   @override
   State<AppNavigator> createState() => _AppNavigatorState();

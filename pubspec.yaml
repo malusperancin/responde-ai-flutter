@@ -19,4 +19,4 @@ flutter:
   uses-material-design: true
   
   assets:
-    - lib/view/images/
+    - lib/view/shared/images/
