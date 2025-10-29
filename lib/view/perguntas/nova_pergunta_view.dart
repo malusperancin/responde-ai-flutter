@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../control/pergunta_inherited_widget.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../bloc/pergunta_bloc.dart';
 import '../../control/usuario_controller.dart';
+import '../../model/pergunta.dart';
 import '../shared/shared.dart';
 
 class NovaPerguntaView extends StatefulWidget {
@@ -47,45 +49,60 @@ class _NovaPerguntaViewState extends State<NovaPerguntaView> {
     });
 
     try {
-      final perguntaNotifier = PerguntaInheritedWidget.of(context);
-      final sucesso = perguntaNotifier.adicionarPergunta(
+      final now = DateTime.now();
+      final pergunta = Pergunta(
+        id: '', // O Firebase vai gerar automaticamente
+        usuarioId: _usuarioController.usuarioLogado?.id ?? 1,
+        data: '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}',
+        hora: '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
         descricao: descricao,
+        timestamp: now,
       );
 
-      if (sucesso) {
-        ModalPersonalizado.mostrar(
-          context,
-          texto: 'Pergunta enviada com sucesso!',
-          textoBotao: 'OK',
-          onPressed: () {
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-            _descricaoController.clear();
-          },
-        );
-      } else {
-        ModalPersonalizado.mostrar(
-          context,
-          texto: 'Erro ao enviar pergunta. Tente novamente.',
-          textoBotao: 'OK',
-        );
-      }
+      context.read<PerguntaBloc>().add(SubmitPerguntaEvent(pergunta: pergunta));
     } catch (e) {
       ModalPersonalizado.mostrar(
         context,
         texto: 'Erro inesperado. Tente novamente.',
         textoBotao: 'OK',
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BlocListener<PerguntaBloc, PerguntaState>(
+      listener: (context, state) {
+        if (state is PerguntaSuccessState) {
+          setState(() {
+            _isLoading = false;
+          });
+          ModalPersonalizado.mostrar(
+            context,
+            texto: 'Pergunta enviada com sucesso!',
+            textoBotao: 'OK',
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+              _descricaoController.clear();
+            },
+          );
+        } else if (state is PerguntaErrorState) {
+          setState(() {
+            _isLoading = false;
+          });
+          ModalPersonalizado.mostrar(
+            context,
+            texto: 'Erro ao enviar pergunta: ${state.message}',
+            textoBotao: 'OK',
+          );
+        } else if (state is PerguntaLoadingState) {
+          setState(() {
+            _isLoading = true;
+          });
+        }
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFFEEEEEE),
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
@@ -193,6 +210,7 @@ class _NovaPerguntaViewState extends State<NovaPerguntaView> {
           ),
         ),
       ),
+    ),
     );
   }
 }

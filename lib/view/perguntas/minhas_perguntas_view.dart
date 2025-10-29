@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:responde_ai/view/perguntas/widgets/widgets.dart';
-import '../../control/pergunta_inherited_widget.dart';
+import '../../bloc/pergunta_bloc.dart';
 import '../../control/usuario_controller.dart';
 import '../../model/pergunta.dart';
 
@@ -27,7 +28,6 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
     _tabController.dispose();
     super.dispose();
   }
-
 
   // TODO: quando houver integração com backend, filtrar as perguntas do usuario logado diretamente na consulta
   List<Pergunta> _filtrarMinhasPerguntas(
@@ -75,7 +75,7 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -117,44 +117,99 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
       );
     }
 
-    final perguntaNotifier = PerguntaInheritedWidget.of(context);
-    final todasPerguntas = perguntaNotifier.perguntas;
+    return BlocBuilder<PerguntaBloc, PerguntaState>(
+      builder: (context, state) {
+        if (state is PerguntaLoadingState) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFE8E8E8),
+            appBar: AppBar(
+              backgroundColor: const Color(0xFF4F82B2),
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              title: const Text(
+                'Minhas Perguntas',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
-    final perguntasNaoRespondidas = _filtrarMinhasPerguntas(
-      todasPerguntas,
-      false,
-    );
-    final perguntasRespondidas = _filtrarMinhasPerguntas(todasPerguntas, true);
+        if (state is PerguntaErrorState) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFE8E8E8),
+            appBar: AppBar(
+              backgroundColor: const Color(0xFF4F82B2),
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              title: const Text(
+                'Minhas Perguntas',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Erro: ${state.message}',
+                    style: const TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<PerguntaBloc>().add(LoadPerguntasEvent());
+                    },
+                    child: const Text('Tentar novamente'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
-    return Scaffold(
-      floatingActionButton: _usuarioController.estaLogado ? const PerguntarButton() : null,
-      backgroundColor: const Color(0xFFE8E8E8),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF4F82B2),
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'Minhas Perguntas',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: [
-            Tab(text: 'Não Respondidas (${perguntasNaoRespondidas.length})'),
-            Tab(text: 'Respondidas (${perguntasRespondidas.length})'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildListaPerguntas(perguntasNaoRespondidas, false),
-          _buildListaPerguntas(perguntasRespondidas, true),
-        ],
-      ),
+        final todasPerguntas = (state is PerguntaLoadedState) ? state.perguntaList : <Pergunta>[];
+
+        final perguntasNaoRespondidas = _filtrarMinhasPerguntas(
+          todasPerguntas,
+          false,
+        );
+        final perguntasRespondidas = _filtrarMinhasPerguntas(todasPerguntas, true);
+
+        return Scaffold(
+          floatingActionButton: _usuarioController.estaLogado ? const PerguntarButton() : null,
+          backgroundColor: const Color(0xFFE8E8E8),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF4F82B2),
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            title: const Text(
+              'Minhas Perguntas',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            bottom: TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.white,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              tabs: [
+                Tab(text: 'Não Respondidas (${perguntasNaoRespondidas.length})'),
+                Tab(text: 'Respondidas (${perguntasRespondidas.length})'),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildListaPerguntas(perguntasNaoRespondidas, false),
+              _buildListaPerguntas(perguntasRespondidas, true),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -172,13 +227,11 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
                 pergunta: pergunta,
                 onResponder: _usuarioController.estaLogado && !respondidas
                     ? (resposta) {
-                        final perguntaNotifier = PerguntaInheritedWidget.of(
-                          context,
-                        );
-                        perguntaNotifier.responderPergunta(
-                          pergunta.id,
-                          resposta,
-                        );
+                        context.read<PerguntaBloc>().add(ResponderPerguntaEvent(
+                          perguntaId: pergunta.id,
+                          resposta: resposta,
+                          usuarioId: _usuarioController.usuarioLogado?.id ?? 1,
+                        ));
                       }
                     : null,
               ),

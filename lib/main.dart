@@ -1,41 +1,31 @@
 import 'package:flutter/material.dart';
-import 'control/pergunta_change_notifier.dart';
-import 'control/pergunta_inherited_widget.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'bloc/pergunta_bloc.dart';
 import 'view/view.dart';
+import 'firebase_options_dev.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const RespondeAiApp());
 }
 
-class RespondeAiApp extends StatefulWidget {
+class RespondeAiApp extends StatelessWidget {
   const RespondeAiApp({super.key});
 
   @override
-  State<RespondeAiApp> createState() => _RespondeAiAppState();
-}
-
-class _RespondeAiAppState extends State<RespondeAiApp> {
-  late final PerguntaChangeNotifier _perguntaChangeNotifier;
-
-  @override
-  void initState() {
-    super.initState();
-    _perguntaChangeNotifier = PerguntaChangeNotifier();
-  }
-
-  @override
-  void dispose() {
-    _perguntaChangeNotifier.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return PerguntaInheritedWidget(
-      perguntaChangeNotifier: _perguntaChangeNotifier,
+    return BlocProvider(
+      create: (context) => PerguntaBloc()..add(LoadPerguntasEvent()),
       child: MaterialApp(
-        title: 'Perguntas & Respostas',
-        theme: ThemeData(primarySwatch: Colors.blue),
+        title: 'Responde Aí',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
         home: const AppNavigator(),
       ),
     );

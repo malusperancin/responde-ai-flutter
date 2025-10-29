@@ -1,6 +1,6 @@
 
 class Pergunta {
-  final int id;
+  final String id;
   final int usuarioId;
   final String data;
   final String hora;
@@ -9,6 +9,7 @@ class Pergunta {
   final int? respondidaPorUsuarioId;
   final String? dataResposta;
   final String? horaResposta;
+  final DateTime? timestamp;
 
   Pergunta({
     required this.id,
@@ -20,25 +21,28 @@ class Pergunta {
     this.respondidaPorUsuarioId,
     this.dataResposta,
     this.horaResposta,
+    this.timestamp,
   });
 
   factory Pergunta.fromJson(Map<String, dynamic> json) {
     return Pergunta(
-      id: json['id'],
-      usuarioId: json['usuarioId'],
-      data: json['data'],
-      hora: json['hora'],
-      descricao: json['descricao'],
+      id: json['id'] ?? '',
+      usuarioId: json['usuarioId'] ?? 0,
+      data: json['data'] ?? '',
+      hora: json['hora'] ?? '',
+      descricao: json['descricao'] ?? '',
       resposta: json['resposta'],
       respondidaPorUsuarioId: json['respondidaPorUsuarioId'],
       dataResposta: json['dataResposta'],
       horaResposta: json['horaResposta'],
+      timestamp: json['timestamp'] != null 
+          ? DateTime.parse(json['timestamp'])
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'usuarioId': usuarioId,
       'data': data,
       'hora': hora,
@@ -47,11 +51,12 @@ class Pergunta {
       'respondidaPorUsuarioId': respondidaPorUsuarioId,
       'dataResposta': dataResposta,
       'horaResposta': horaResposta,
+      'timestamp': (timestamp ?? DateTime.now()).toIso8601String(),
     };
   }
 
   Pergunta copyWith({
-    int? id,
+    String? id,
     int? usuarioId,
     String? data,
     String? hora,
@@ -60,6 +65,7 @@ class Pergunta {
     int? respondidaPorUsuarioId,
     String? dataResposta,
     String? horaResposta,
+    DateTime? timestamp,
   }) {
     return Pergunta(
       id: id ?? this.id,
@@ -71,6 +77,7 @@ class Pergunta {
       respondidaPorUsuarioId: respondidaPorUsuarioId ?? this.respondidaPorUsuarioId,
       dataResposta: dataResposta ?? this.dataResposta,
       horaResposta: horaResposta ?? this.horaResposta,
+      timestamp: timestamp ?? this.timestamp,
     );
   }
 }
