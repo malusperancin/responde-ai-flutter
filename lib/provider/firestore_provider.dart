@@ -9,24 +9,20 @@ class FirestoreProvider {
   final CollectionReference perguntasCollection = 
       FirebaseFirestore.instance.collection("perguntas");
 
-  // Stream controller para perguntas
   final StreamController<List<Pergunta>> _perguntasController = 
       StreamController<List<Pergunta>>.broadcast();
 
   Stream<List<Pergunta>> get perguntasStream => _perguntasController.stream;
 
-  // Inserir nova pergunta
   Future<void> insertPergunta(Pergunta pergunta) async {
     try {
       await perguntasCollection.add(pergunta.toJson());
-      // Recarregar perguntas após inserir
       await loadPerguntas();
     } catch (e) {
       throw Exception('Erro ao inserir pergunta: $e');
     }
   }
 
-  // Responder pergunta
   Future<void> responderPergunta(String perguntaId, String resposta, int usuarioId) async {
     try {
       final agora = DateTime.now();
@@ -36,14 +32,12 @@ class FirestoreProvider {
         'dataResposta': '${agora.day.toString().padLeft(2, '0')}/${agora.month.toString().padLeft(2, '0')}',
         'horaResposta': '${agora.hour.toString().padLeft(2, '0')}:${agora.minute.toString().padLeft(2, '0')}',
       });
-      // Recarregar perguntas após responder
       await loadPerguntas();
     } catch (e) {
       throw Exception('Erro ao responder pergunta: $e');
     }
   }
 
-  // Carregar todas as perguntas
   Future<void> loadPerguntas() async {
     try {
       QuerySnapshot snapshot = await perguntasCollection
@@ -52,7 +46,7 @@ class FirestoreProvider {
 
       List<Pergunta> perguntas = snapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id; // Adicionar o ID do documento
+        data['id'] = doc.id;
         return Pergunta.fromJson(data);
       }).toList();
 
@@ -62,7 +56,6 @@ class FirestoreProvider {
     }
   }
 
-  // Obter perguntas de um usuário específico
   Future<List<Pergunta>> getPerguntasDoUsuario(int usuarioId) async {
     try {
       QuerySnapshot snapshot = await perguntasCollection
@@ -80,7 +73,6 @@ class FirestoreProvider {
     }
   }
 
-  // Fechar stream quando não precisar mais
   void dispose() {
     _perguntasController.close();
   }

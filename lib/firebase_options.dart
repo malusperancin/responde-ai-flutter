@@ -13,14 +13,13 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // Placeholder values; replace with actual configuration for other environments
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: '',
-    appId: '',
-    messagingSenderId: '',
-    projectId: '',
-    authDomain: '',
-    storageBucket: '',
-    measurementId: '',
+    apiKey: "AIzaSyBeE6bCuBi3-ABicndiSYbBo3q92I1ZZCg",
+    authDomain: "responde-ai-si700.firebaseapp.com",
+    projectId: "responde-ai-si700",
+    storageBucket: "responde-ai-si700.firebasestorage.app",
+    messagingSenderId: "563112049979",
+    appId: "1:563112049979:web:5b8908db381cc0ff908b1e",
+    measurementId: "G-K0QC8VHPHJ"
   );
 }

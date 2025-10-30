@@ -7,12 +7,10 @@ class PerguntaBloc extends Bloc<PerguntaEvent, PerguntaState> {
       : super(
           PerguntaLoadedState([]),
         ) {
-    // Escuta mudanças do Firestore
     FirestoreProvider.helper.perguntasStream.listen((List<Pergunta> event) {
       add(PerguntasFromBackendEvent(perguntaList: event));
     });
 
-    // Handler para submeter nova pergunta
     on<SubmitPerguntaEvent>((SubmitPerguntaEvent event, emit) async {
       emit(PerguntaLoadingState());
       try {
@@ -23,12 +21,10 @@ class PerguntaBloc extends Bloc<PerguntaEvent, PerguntaState> {
       }
     });
 
-    // Handler para receber perguntas do backend
     on<PerguntasFromBackendEvent>((event, emit) {
       emit(PerguntaLoadedState(event.perguntaList));
     });
 
-    // Handler para responder pergunta
     on<ResponderPerguntaEvent>((event, emit) async {
       emit(PerguntaLoadingState());
       try {
@@ -43,7 +39,6 @@ class PerguntaBloc extends Bloc<PerguntaEvent, PerguntaState> {
       }
     });
 
-    // Handler para carregar perguntas iniciais
     on<LoadPerguntasEvent>((event, emit) async {
       emit(PerguntaLoadingState());
       try {

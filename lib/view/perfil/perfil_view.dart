@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:responde_ai/bloc/auth_bloc.dart';
 import '../../control/usuario_controller.dart';
 import 'perfil_deslogado_view.dart';
 import 'perfil_login_view.dart';
@@ -46,26 +48,37 @@ class _PerfilViewState extends State<PerfilView> {
   }
 
   void _realizarLogin(String email, String senha) async {
-    final sucesso = await _usuarioController.login(email, senha);
-    if (sucesso) {
-      ModalPersonalizado.mostrar(
-        context,
-        texto: 'Login realizado com sucesso!',
-        textoBotao: 'OK',
-        onPressed: () {
-          Navigator.of(context).pop(); // Fecha o modal
-          setState(() {
-            _estado = PerfilEstado.logado;
-          });
-        },
-      );
-    } else {
-      ModalPersonalizado.mostrar(
-        context,
-        texto: 'Email ou senha incorretos.',
-        textoBotao: 'OK',
-      );
+    try {
+      context.read<AuthBloc>().add(LoginUser(email: email, password: senha));
     }
+    catch (e) {
+      ModalPersonalizado.mostrar(
+        context,
+        texto: 'Erro ao fazer login. Tente novamente mais tarde.',
+        textoBotao: 'OK',
+      );
+      return;
+    }
+
+    // if (sucesso) {
+    //   ModalPersonalizado.mostrar(
+    //     context,
+    //     texto: 'Login realizado com sucesso!',
+    //     textoBotao: 'OK',
+    //     onPressed: () {
+    //       Navigator.of(context).pop(); // Fecha o modal
+    //       setState(() {
+    //         _estado = PerfilEstado.logado;
+    //       });
+    //     },
+    //   );
+    // } else {
+    //   ModalPersonalizado.mostrar(
+    //     context,
+    //     texto: 'Email ou senha incorretos.',
+    //     textoBotao: 'OK',
+    //   );
+    // }
   }
 
   void _realizarCadastro(String nome, String email, String senha) async {

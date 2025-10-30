@@ -12,6 +12,12 @@ class Usuario {
     required this.senha,
   });
 
+  Usuario.login({
+    required this.email,
+  })  : id = 0,
+        nome = '',
+        senha = '';
+
   factory Usuario.fromJson(Map<String, dynamic> json) {
     return Usuario(
       id: json['id'],
