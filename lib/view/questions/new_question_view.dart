@@ -1,45 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/pergunta_bloc.dart';
-import '../../control/usuario_controller.dart';
-import '../../model/pergunta.dart';
+import '../../bloc/question_bloc.dart';
+import '../../bloc/auth_bloc.dart';
+import '../../model/question.dart';
 import '../shared/shared.dart';
 
-class NovaPerguntaView extends StatefulWidget {
-  const NovaPerguntaView({super.key});
+class NewQuestionView extends StatefulWidget {
+  const NewQuestionView({super.key});
 
   @override
-  State<NovaPerguntaView> createState() => _NovaPerguntaViewState();
+  State<NewQuestionView> createState() => _NewQuestionViewState();
 }
 
-class _NovaPerguntaViewState extends State<NovaPerguntaView> {
-  final TextEditingController _descricaoController = TextEditingController();
-  final UsuarioController _usuarioController = UsuarioController();
+class _NewQuestionViewState extends State<NewQuestionView> {
+  final TextEditingController _descriptionController = TextEditingController();
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _descricaoController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
-  void _enviarPergunta() async {
-    if (!_usuarioController.estaLogado) {
-      ModalPersonalizado.mostrar(
+  void _submitQuestion() {
+    final authState = context.read<AuthBloc>().state;
+    
+    if (authState is! Authenticated) {
+      CustomModal.show(
         context,
-        texto: 'Você precisa estar logado para fazer uma pergunta!',
-        textoBotao: 'OK',
+        text: 'Você precisa estar logado para fazer uma pergunta.',
+        buttonText: 'OK',
       );
       return;
     }
 
-    final descricao = _descricaoController.text.trim();
+    final description = _descriptionController.text.trim();
 
-    if (descricao.isEmpty) {
-      ModalPersonalizado.mostrar(
+    if (description.isEmpty) {
+      CustomModal.show(
         context,
-        texto: 'Por favor, descreva sua pergunta.',
-        textoBotao: 'OK',
+        text: 'Por favor, descreva sua pergunta.',
+        buttonText: 'OK',
       );
       return;
     }
@@ -50,68 +51,72 @@ class _NovaPerguntaViewState extends State<NovaPerguntaView> {
 
     try {
       final now = DateTime.now();
-      final pergunta = Pergunta(
-        id: '', // O Firebase vai gerar automaticamente
-        usuarioId: _usuarioController.usuarioLogado?.id ?? 1,
-        data: '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}',
-        hora: '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
-        descricao: descricao,
+      final question = Question(
+        id: '',
+        userId: authState.user.uid,
+        date: '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}',
+        time: '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
+        description: description,
         timestamp: now,
       );
 
-      context.read<PerguntaBloc>().add(SubmitPerguntaEvent(pergunta: pergunta));
+      context.read<QuestionBloc>().add(SubmitQuestionEvent(question: question));
     } catch (e) {
-      ModalPersonalizado.mostrar(
+      CustomModal.show(
         context,
-        texto: 'Erro inesperado. Tente novamente.',
-        textoBotao: 'OK',
+        text: 'Erro inesperado. Tente novamente.',
+        buttonText: 'OK',
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PerguntaBloc, PerguntaState>(
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        final isLoggedIn = authState is Authenticated;
+
+        return BlocListener<QuestionBloc, QuestionState>(
       listener: (context, state) {
-        if (state is PerguntaSuccessState) {
+        if (state is QuestionSuccessState) {
           setState(() {
             _isLoading = false;
           });
-          ModalPersonalizado.mostrar(
+          CustomModal.show(
             context,
-            texto: 'Pergunta enviada com sucesso!',
-            textoBotao: 'OK',
+            text: 'Pergunta enviada com sucesso!',
+            buttonText: 'OK',
             onPressed: () {
               Navigator.of(context).pop();
               Navigator.of(context).pop();
-              _descricaoController.clear();
+              _descriptionController.clear();
             },
           );
-        } else if (state is PerguntaErrorState) {
+        } else if (state is QuestionErrorState) {
           setState(() {
             _isLoading = false;
           });
-          ModalPersonalizado.mostrar(
+          CustomModal.show(
             context,
-            texto: 'Erro ao enviar pergunta: ${state.message}',
-            textoBotao: 'OK',
+            text: 'Erro ao enviar pergunta: ${state.message}',
+            buttonText: 'OK',
           );
-        } else if (state is PerguntaLoadingState) {
+        } else if (state is QuestionLoadingState) {
           setState(() {
             _isLoading = true;
           });
         }
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFFEEEEEE),
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Nova Pergunta', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-        backgroundColor: const Color(0xFF4F82B2),
-      ),
-      body: SizedBox(
-        width: double.infinity,
-        child: SingleChildScrollView(
+        backgroundColor: const Color(0xFFEEEEEE),
+        appBar: AppBar(
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: const Text('Nova Pergunta', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          backgroundColor: const Color(0xFF4F82B2),
+        ),
+        body: SizedBox(
+          width: double.infinity,
+          child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 24),
             child: Column(
@@ -136,7 +141,7 @@ class _NovaPerguntaViewState extends State<NovaPerguntaView> {
                     border: Border.all(color: Colors.grey.shade400),
                   ),
                   child: TextField(
-                    controller: _descricaoController,
+                    controller: _descriptionController,
                     minLines: 6,
                     maxLines: 10,
                     style: const TextStyle(fontSize: 14),
@@ -154,7 +159,7 @@ class _NovaPerguntaViewState extends State<NovaPerguntaView> {
                     width: 380,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _enviarPergunta,
+                      onPressed: _isLoading ? null : _submitQuestion,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4F82B2),
                         shape: RoundedRectangleBorder(
@@ -183,7 +188,7 @@ class _NovaPerguntaViewState extends State<NovaPerguntaView> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (!_usuarioController.estaLogado)
+                if (!isLoggedIn)
                   Container(
                     padding: const EdgeInsets.all(16),
                     margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -208,9 +213,11 @@ class _NovaPerguntaViewState extends State<NovaPerguntaView> {
               ],
             ),
           ),
+          ),
         ),
       ),
-    ),
+    );
+      },
     );
   }
 }

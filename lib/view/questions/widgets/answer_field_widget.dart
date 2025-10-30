@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CampoRespostaWidget extends StatelessWidget {
+class AnswerFieldWidget extends StatelessWidget {
   final TextEditingController controller;
-  final VoidCallback onEnviar;
+  final VoidCallback onSubmit;
 
-  const CampoRespostaWidget({
+  const AnswerFieldWidget({
     super.key,
     required this.controller,
-    required this.onEnviar,
+    required this.onSubmit,
   });
 
   @override
@@ -42,7 +42,7 @@ class CampoRespostaWidget extends StatelessWidget {
             ),
             elevation: 4,
           ),
-          onPressed: onEnviar,
+          onPressed: onSubmit,
           child: const Padding(
             padding: EdgeInsets.symmetric(vertical: 6),
             child: Text(

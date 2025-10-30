@@ -1,30 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../../control/usuario_controller.dart';
+import '../../../provider/firestore_provider.dart';
 
-class PerguntaWidget extends StatelessWidget {
-  final int usuarioId;
-  final String data;
-  final String hora;
-  final String texto;
+class QuestionWidget extends StatelessWidget {
+  final String userId;
+  final String date;
+  final String time;
+  final String text;
 
-  const PerguntaWidget({
+  const QuestionWidget({
     super.key,
-    required this.usuarioId,
-    required this.data,
-    required this.hora,
-    required this.texto,
+    required this.userId,
+    required this.date,
+    required this.time,
+    required this.text,
   });
-
-  String _getNomeUsuario() {
-    final usuarioController = UsuarioController();
-    final usuarios = usuarioController.todosUsuarios;
-    try {
-      final usuario = usuarios.firstWhere((u) => u.id == usuarioId);
-      return usuario.nome;
-    } catch (e) {
-      return 'Usuário não encontrado';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,16 +33,22 @@ class PerguntaWidget extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  _getNomeUsuario(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    color: Color(0xFF595959),
-                  ),
+                FutureBuilder(
+                  future: FirestoreProvider.helper.getUserName(userId),
+                  builder: (context, snapshot) {
+                    final userName = snapshot.data ?? 'Carregando...';
+                    return Text(
+                      userName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: Color(0xFF595959),
+                      ),
+                    );
+                  },
                 ),
                 Text(
-                  '$data   $hora',
+                  '$date   $time',
                   style: const TextStyle(
                     color: Color(0xFF595959),
                     fontSize: 12,
@@ -70,7 +65,7 @@ class PerguntaWidget extends StatelessWidget {
               ),
               padding: const EdgeInsets.all(12),
               child: Text(
-                texto,
+                text,
                 style: const TextStyle(fontSize: 14, color: Color(0xFF595959)),
               ),
             ),

@@ -1,87 +1,149 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../model/pergunta.dart';
+import '../model/question.dart';
+import '../model/user.dart';
 
 class FirestoreProvider {
   static FirestoreProvider helper = FirestoreProvider._();
   FirestoreProvider._();
 
-  final CollectionReference perguntasCollection = 
-      FirebaseFirestore.instance.collection("perguntas");
+  final CollectionReference questionsCollection = 
+      FirebaseFirestore.instance.collection("questions");
+  
+  final CollectionReference usersCollection = 
+      FirebaseFirestore.instance.collection("users");
 
-  // Stream controller para perguntas
-  final StreamController<List<Pergunta>> _perguntasController = 
-      StreamController<List<Pergunta>>.broadcast();
+  final StreamController<List<Question>> _questionsController = 
+      StreamController<List<Question>>.broadcast();
 
-  Stream<List<Pergunta>> get perguntasStream => _perguntasController.stream;
+  Stream<List<Question>> get questionsStream => _questionsController.stream;
 
-  // Inserir nova pergunta
-  Future<void> insertPergunta(Pergunta pergunta) async {
+  final Map<String, String> _nameCache = {};
+
+  Future<void> insertQuestion(Question question) async {
     try {
-      await perguntasCollection.add(pergunta.toJson());
-      // Recarregar perguntas após inserir
-      await loadPerguntas();
+      await questionsCollection.add(question.toJson());
+      await loadQuestions();
     } catch (e) {
       throw Exception('Erro ao inserir pergunta: $e');
     }
   }
 
-  // Responder pergunta
-  Future<void> responderPergunta(String perguntaId, String resposta, int usuarioId) async {
+  Future<void> answerQuestion(String questionId, String answer, String userId) async {
     try {
-      final agora = DateTime.now();
-      await perguntasCollection.doc(perguntaId).update({
-        'resposta': resposta,
-        'respondidaPorUsuarioId': usuarioId,
-        'dataResposta': '${agora.day.toString().padLeft(2, '0')}/${agora.month.toString().padLeft(2, '0')}',
-        'horaResposta': '${agora.hour.toString().padLeft(2, '0')}:${agora.minute.toString().padLeft(2, '0')}',
+      final now = DateTime.now();
+      await questionsCollection.doc(questionId).update({
+        'answer': answer,
+        'answeredByUserId': userId,
+        'answerDate': '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}',
+        'answerTime': '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
       });
-      // Recarregar perguntas após responder
-      await loadPerguntas();
+      await loadQuestions();
     } catch (e) {
       throw Exception('Erro ao responder pergunta: $e');
     }
   }
 
-  // Carregar todas as perguntas
-  Future<void> loadPerguntas() async {
+  Future<void> loadQuestions() async {
     try {
-      QuerySnapshot snapshot = await perguntasCollection
+      QuerySnapshot snapshot = await questionsCollection
           .orderBy('timestamp', descending: true)
           .get();
 
-      List<Pergunta> perguntas = snapshot.docs.map((doc) {
+      List<Question> questions = snapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id; // Adicionar o ID do documento
-        return Pergunta.fromJson(data);
+        data['id'] = doc.id;
+        return Question.fromJson(data);
       }).toList();
 
-      _perguntasController.add(perguntas);
+      _questionsController.add(questions);
     } catch (e) {
       throw Exception('Erro ao carregar perguntas: $e');
     }
   }
 
-  // Obter perguntas de um usuário específico
-  Future<List<Pergunta>> getPerguntasDoUsuario(int usuarioId) async {
+  Future<List<Question>> getUserQuestions(String userId) async {
     try {
-      QuerySnapshot snapshot = await perguntasCollection
-          .where('usuarioId', isEqualTo: usuarioId)
+      QuerySnapshot snapshot = await questionsCollection
+          .where('userId', isEqualTo: userId)
           .orderBy('timestamp', descending: true)
           .get();
 
       return snapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         data['id'] = doc.id;
-        return Pergunta.fromJson(data);
+        return Question.fromJson(data);
       }).toList();
     } catch (e) {
       throw Exception('Erro ao carregar perguntas do usuário: $e');
     }
   }
 
-  // Fechar stream quando não precisar mais
+  Future<void> saveUser(User user) async {
+    try {
+      await usersCollection.doc(user.uid).set(
+        user.toFirestore(),
+        SetOptions(merge: true),
+      );
+      if (user.name.isNotEmpty) {
+        _nameCache[user.uid] = user.name;
+      }
+    } catch (e) {
+      throw Exception('Erro ao salvar usuário: $e');
+    }
+  }
+
+  Future<User?> getUser(String uid) async {
+    try {
+      final doc = await usersCollection.doc(uid).get();
+      if (doc.exists) {
+        final user = User.fromFirestore(doc);
+        if (user.name.isNotEmpty) {
+          _nameCache[uid] = user.name;
+        }
+        return user;
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Erro ao buscar usuário: $e');
+    }
+  }
+
+  Future<String> getUserName(String uid) async {
+    if (_nameCache.containsKey(uid)) {
+      return _nameCache[uid]!;
+    }
+
+    try {
+      final doc = await usersCollection.doc(uid).get();
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>?;
+        final name = data?['name'] as String? ?? 'Usuário';
+        _nameCache[uid] = name;
+        return name;
+      }
+      return 'Usuário';
+    } catch (e) {
+      return 'Usuário';
+    }
+  }
+
+  Future<void> updateUser(String uid, Map<String, dynamic> data) async {
+    try {
+      await usersCollection.doc(uid).update(data);
+      if (data.containsKey('name')) {
+        _nameCache[uid] = data['name'];
+      }
+    } catch (e) {
+      throw Exception('Erro ao atualizar usuário: $e');
+    }
+  }
+
+  void clearCache() {
+    _nameCache.clear();
+  }
+
   void dispose() {
-    _perguntasController.close();
+    _questionsController.close();
   }
 }

@@ -1,100 +1,82 @@
 import 'package:flutter/material.dart';
 import '../shared/shared.dart';
 
-class PerfilLogadoView extends StatefulWidget {
-  final String nome;
+class ProfileLoggedInView extends StatefulWidget {
+  final String name;
   final String email;
   final VoidCallback onLogout;
-  final Function(String nome, String email)? onUpdateUser;
+  final Function(String name)? onUpdateUser;
 
-  const PerfilLogadoView({
+  const ProfileLoggedInView({
     super.key,
-    required this.nome,
+    required this.name,
     required this.email,
     required this.onLogout,
     this.onUpdateUser,
   });
 
   @override
-  State<PerfilLogadoView> createState() => _PerfilLogadoViewState();
+  State<ProfileLoggedInView> createState() => _ProfileLoggedInViewState();
 }
 
-class _PerfilLogadoViewState extends State<PerfilLogadoView> {
-  late TextEditingController _nomeController;
-  late TextEditingController _emailController;
-  bool _editandoNome = false;
-  bool _editandoEmail = false;
-  bool _carregando = false;
+class _ProfileLoggedInViewState extends State<ProfileLoggedInView> {
+  late TextEditingController _nameController;
+  bool _editingName = false;
+  bool _loading = false;
 
   @override
   void initState() {
     super.initState();
-    _nomeController = TextEditingController(text: widget.nome);
-    _emailController = TextEditingController(text: widget.email);
+    _nameController = TextEditingController(text: widget.name);
   }
 
   @override
-  void didUpdateWidget(PerfilLogadoView oldWidget) {
+  void didUpdateWidget(ProfileLoggedInView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Atualiza os controllers quando os dados do widget mudarem
-    if (oldWidget.nome != widget.nome || oldWidget.email != widget.email) {
-      _nomeController.text = widget.nome;
-      _emailController.text = widget.email;
+    if (oldWidget.name != widget.name) {
+      _nameController.text = widget.name;
     }
   }
 
   @override
   void dispose() {
-    _nomeController.dispose();
-    _emailController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
-  // Função para salvar as alterações do usuário
-  void _salvarAlteracoes() async {
+  void _saveChanges() async {
     if (widget.onUpdateUser == null) return;
 
     setState(() {
-      _carregando = true;
+      _loading = true;
     });
 
     try {
-      await widget.onUpdateUser!(_nomeController.text, _emailController.text);
+      await widget.onUpdateUser!(_nameController.text);
       setState(() {
-        _editandoNome = false;
-        _editandoEmail = false;
+        _editingName = false;
       });
-
-      if (mounted) {
-        ModalPersonalizado.mostrar(
-          context,
-          texto: 'Dados atualizados com sucesso!',
-          textoBotao: 'Concluído',
-        );
-      }
     } catch (e) {
       if (mounted) {
-        ModalPersonalizado.mostrar(
+        CustomModal.show(
           context,
-          texto: 'Erro ao atualizar dados: $e',
-          textoBotao: 'Tentar novamente',
+          text: 'Erro ao atualizar dados: $e',
+          buttonText: 'Tentar novamente',
         );
       }
     } finally {
       if (mounted) {
         setState(() {
-          _carregando = false;
+          _loading = false;
         });
       }
     }
   }
 
-  void _cancelarEdicao() {
+  void _cancelEdit() {
     setState(() {
-      _nomeController.text = widget.nome;
-      _emailController.text = widget.email;
-      _editandoNome = false;
-      _editandoEmail = false;
+      _nameController.text = widget.name;
+      _editingName = false;
     });
   }
 
@@ -146,9 +128,9 @@ class _PerfilLogadoViewState extends State<PerfilLogadoView> {
                           fontSize: 16,
                         ),
                       ),
-                      if (!_editandoNome)
+                      if (!_editingName)
                         IconButton(
-                          onPressed: () => setState(() => _editandoNome = true),
+                          onPressed: () => setState(() => _editingName = true),
                           icon: const Icon(
                             Icons.edit,
                             color: Color(0xFF4F82B2),
@@ -158,9 +140,9 @@ class _PerfilLogadoViewState extends State<PerfilLogadoView> {
                   ),
                   const SizedBox(height: 8),
 
-                  if (_editandoNome)
+                  if (_editingName)
                     TextField(
-                      controller: _nomeController,
+                      controller: _nameController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(
@@ -181,74 +163,68 @@ class _PerfilLogadoViewState extends State<PerfilLogadoView> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        widget.nome,
+                        widget.name,
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),
 
                   const SizedBox(height: 24),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Email:',
-                        style: TextStyle(
-                          color: Color(0xFF595959),
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                        ),
-                      ),
-                      if (!_editandoEmail)
-                        IconButton(
-                          onPressed: () =>
-                              setState(() => _editandoEmail = true),
-                          icon: const Icon(
-                            Icons.edit,
-                            color: Color(0xFF4F82B2),
-                          ),
-                        ),
-                    ],
+                  // Email é apenas visualização, não pode ser editado
+                  const Text(
+                    'Email:',
+                    style: TextStyle(
+                      color: Color(0xFF595959),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 8),
-
-                  if (_editandoEmail)
-                    TextField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                    )
-                  else
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFCCCCCC)),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        widget.email,
-                        style: const TextStyle(fontSize: 16),
-                      ),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
                     ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFFCCCCCC)),
+                      borderRadius: BorderRadius.circular(4),
+                      color: const Color(0xFFF5F5F5), // Fundo cinza para indicar que é só leitura
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.email,
+                            style: const TextStyle(fontSize: 16, color: Color(0xFF595959)),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.lock_outline,
+                          size: 18,
+                          color: Color(0xFF999999),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'O email não pode ser alterado',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF999999),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
 
                   const SizedBox(height: 24),
 
-                  if (_editandoNome || _editandoEmail)
+                  if (_editingName)
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: _carregando ? null : _salvarAlteracoes,
+                            onPressed: _loading ? null : _saveChanges,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFFA67F52),
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -256,7 +232,7 @@ class _PerfilLogadoViewState extends State<PerfilLogadoView> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: _carregando
+                            child: _loading
                                 ? const CircularProgressIndicator(
                                     color: Colors.white,
                                   )
@@ -272,7 +248,7 @@ class _PerfilLogadoViewState extends State<PerfilLogadoView> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: _carregando ? null : _cancelarEdicao,
+                            onPressed: _loading ? null : _cancelEdit,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.grey,
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -291,10 +267,8 @@ class _PerfilLogadoViewState extends State<PerfilLogadoView> {
                         ),
                       ],
                     ),
-
                   const Spacer(),
-
-                  // Botão de logout
+                  const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

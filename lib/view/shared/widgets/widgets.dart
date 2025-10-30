@@ -1,2 +1,1 @@
-// Widgets compartilhados
-export 'modal_personalizado.dart';
+export 'custom_modal.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../nova_pergunta_view.dart';
+import '../new_question_view.dart';
 
-class PerguntarButton extends StatelessWidget {
-  const PerguntarButton({super.key});
+class AskButton extends StatelessWidget {
+  const AskButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -10,7 +10,7 @@ class PerguntarButton extends StatelessWidget {
       onPressed: () {
         Navigator.of(context).push(
           MaterialPageRoute(builder: (context) {
-            return const NovaPerguntaView();
+            return const NewQuestionView();
           }),
         );
       },

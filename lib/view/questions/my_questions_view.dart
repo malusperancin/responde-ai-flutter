@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:responde_ai/view/perguntas/widgets/widgets.dart';
-import '../../bloc/pergunta_bloc.dart';
-import '../../control/usuario_controller.dart';
-import '../../model/pergunta.dart';
+import 'package:responde_ai/view/questions/widgets/widgets.dart';
+import '../../bloc/question_bloc.dart';
+import '../../bloc/auth_bloc.dart';
+import '../../model/question.dart';
 
-class MinhasPerguntasView extends StatefulWidget {
-  const MinhasPerguntasView({super.key});
+class MyQuestionsView extends StatefulWidget {
+  const MyQuestionsView({super.key});
 
   @override
-  State<MinhasPerguntasView> createState() => _MinhasPerguntasViewState();
+  State<MyQuestionsView> createState() => _MyQuestionsViewState();
 }
 
-class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
+class _MyQuestionsViewState extends State<MyQuestionsView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final UsuarioController _usuarioController = UsuarioController();
 
   @override
   void initState() {
@@ -29,28 +28,30 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
     super.dispose();
   }
 
-  // TODO: quando houver integração com backend, filtrar as perguntas do usuario logado diretamente na consulta
-  List<Pergunta> _filtrarMinhasPerguntas(
-    List<Pergunta> todasPerguntas,
-    bool respondidas,
+  List<Question> _filterMyQuestions(
+    List<Question> allQuestions,
+    bool answered,
+    String? userId,
   ) {
-    final usuario = _usuarioController.usuarioLogado;
-    if (usuario == null) return [];
+    if (userId == null) return [];
 
-    return todasPerguntas
-        .where((pergunta) => pergunta.usuarioId == usuario.id)
+    return allQuestions
+        .where((question) => question.userId == userId)
         .where(
-          (pergunta) => respondidas
-              ? pergunta.resposta != null
-              : pergunta.resposta == null,
+          (question) => answered
+              ? question.answer != null
+              : question.answer == null,
         )
         .toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Se o usuario nao estiver logado, mostra a tela informativa para login
-    if (!_usuarioController.estaLogado) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        final isLoggedIn = authState is Authenticated;
+
+        if (!isLoggedIn) {
       return Scaffold(
         backgroundColor: const Color(0xFFE8E8E8),
         appBar: AppBar(
@@ -117,9 +118,9 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
       );
     }
 
-    return BlocBuilder<PerguntaBloc, PerguntaState>(
+    return BlocBuilder<QuestionBloc, QuestionState>(
       builder: (context, state) {
-        if (state is PerguntaLoadingState) {
+        if (state is QuestionLoadingState) {
           return Scaffold(
             backgroundColor: const Color(0xFFE8E8E8),
             appBar: AppBar(
@@ -135,7 +136,7 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
           );
         }
 
-        if (state is PerguntaErrorState) {
+        if (state is QuestionErrorState) {
           return Scaffold(
             backgroundColor: const Color(0xFFE8E8E8),
             appBar: AppBar(
@@ -161,7 +162,7 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      context.read<PerguntaBloc>().add(LoadPerguntasEvent());
+                      context.read<QuestionBloc>().add(LoadQuestionsEvent());
                     },
                     child: const Text('Tentar novamente'),
                   ),
@@ -171,16 +172,19 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
           );
         }
 
-        final todasPerguntas = (state is PerguntaLoadedState) ? state.perguntaList : <Pergunta>[];
+        final allQuestions = (state is QuestionLoadedState) ? state.questions : <Question>[];
 
-        final perguntasNaoRespondidas = _filtrarMinhasPerguntas(
-          todasPerguntas,
+        final authenticatedState = authState;
+        final currentUserId = authenticatedState.user.uid;
+        final unansweredQuestions = _filterMyQuestions(
+          allQuestions,
           false,
+          currentUserId,
         );
-        final perguntasRespondidas = _filtrarMinhasPerguntas(todasPerguntas, true);
+        final answeredQuestions = _filterMyQuestions(allQuestions, true, currentUserId);
 
         return Scaffold(
-          floatingActionButton: _usuarioController.estaLogado ? const PerguntarButton() : null,
+          floatingActionButton: isLoggedIn ? const AskButton() : null,
           backgroundColor: const Color(0xFFE8E8E8),
           appBar: AppBar(
             backgroundColor: const Color(0xFF4F82B2),
@@ -196,41 +200,44 @@ class _MinhasPerguntasViewState extends State<MinhasPerguntasView>
               labelColor: Colors.white,
               unselectedLabelColor: Colors.white70,
               tabs: [
-                Tab(text: 'Não Respondidas (${perguntasNaoRespondidas.length})'),
-                Tab(text: 'Respondidas (${perguntasRespondidas.length})'),
+                Tab(text: 'Não Respondidas (${unansweredQuestions.length})'),
+                Tab(text: 'Respondidas (${answeredQuestions.length})'),
               ],
             ),
           ),
           body: TabBarView(
             controller: _tabController,
             children: [
-              _buildListaPerguntas(perguntasNaoRespondidas, false),
-              _buildListaPerguntas(perguntasRespondidas, true),
+              _buildQuestionList(unansweredQuestions, false, isLoggedIn, authState),
+              _buildQuestionList(answeredQuestions, true, isLoggedIn, authState),
             ],
           ),
         );
       },
     );
+      },
+    );
   }
 
-  Widget _buildListaPerguntas(List<Pergunta> perguntas, bool respondidas) {
+  Widget _buildQuestionList(List<Question> questions, bool answered, bool isLoggedIn, AuthState authState) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: perguntas.length,
+      itemCount: questions.length,
       itemBuilder: (context, index) {
-        final pergunta = perguntas[index];
+        final question = questions[index];
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           child: Column(
             children: [
-              PerguntaRespostaCard(
-                pergunta: pergunta,
-                onResponder: _usuarioController.estaLogado && !respondidas
-                    ? (resposta) {
-                        context.read<PerguntaBloc>().add(ResponderPerguntaEvent(
-                          perguntaId: pergunta.id,
-                          resposta: resposta,
-                          usuarioId: _usuarioController.usuarioLogado?.id ?? 1,
+              QuestionAnswerCard(
+                question: question,
+                onAnswer: isLoggedIn && !answered
+                    ? (answer) {
+                        final user = (authState as Authenticated).user;
+                        context.read<QuestionBloc>().add(AnswerQuestionEvent(
+                          questionId: question.id,
+                          answer: answer,
+                          userId: user.uid,
                         ));
                       }
                     : null,

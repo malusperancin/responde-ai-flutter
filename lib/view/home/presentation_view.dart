@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:responde_ai/control/usuario_controller.dart';
-import '../perguntas/widgets/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../bloc/auth_bloc.dart';
+import '../questions/widgets/widgets.dart';
 import './widgets/icon_widget.dart';
 
-class ApresentacaoView extends StatelessWidget {
-  const ApresentacaoView({super.key});
+class PresentationView extends StatelessWidget {
+  const PresentationView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final usuarioController = UsuarioController();
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        final isLoggedIn = authState is Authenticated;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFEEEEEE),
-      floatingActionButton: usuarioController.estaLogado
-          ? const PerguntarButton()
-          : null,
-      body: SingleChildScrollView(
+        return Scaffold(
+          backgroundColor: const Color(0xFFEEEEEE),
+          floatingActionButton: isLoggedIn
+              ? const AskButton()
+              : null,
+          body: SingleChildScrollView(
         child: Column(
           children: [
             Container(
@@ -91,11 +94,10 @@ class ApresentacaoView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 80),
-            // Texto inferior
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                usuarioController.estaLogado
+                isLoggedIn
                     ? 'Clique no botão azul para perguntar.'
                     : 'Faça login para perguntar e responder.',
                 style: const TextStyle(color: Color(0xFF888888), fontSize: 16),
@@ -106,6 +108,8 @@ class ApresentacaoView extends StatelessWidget {
           ],
         ),
       ),
+        );
+      },
     );
   }
 }

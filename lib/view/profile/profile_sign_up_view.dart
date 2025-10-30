@@ -1,43 +1,43 @@
 import 'package:flutter/material.dart';
 
-class PerfilCadastroView extends StatefulWidget {
-  final Function(String nome, String email, String senha) onCadastroSuccess;
-  final Function(String mensagem) onCadastroError;
+class ProfileSignUpView extends StatefulWidget {
+  final Function(String name, String email, String password) onSignUpSuccess;
+  final Function(String message) onSignUpError;
 
-  const PerfilCadastroView({
+  const ProfileSignUpView({
     super.key,
-    required this.onCadastroSuccess,
-    required this.onCadastroError,
+    required this.onSignUpSuccess,
+    required this.onSignUpError,
   });
 
   @override
-  State<PerfilCadastroView> createState() => _PerfilCadastroViewState();
+  State<ProfileSignUpView> createState() => _ProfileSignUpViewState();
 }
 
-class _PerfilCadastroViewState extends State<PerfilCadastroView> {
-  final _nomeController = TextEditingController();
+class _ProfileSignUpViewState extends State<ProfileSignUpView> {
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _senhaController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _carregando = false;
 
   @override
   void dispose() {
-    _nomeController.dispose();
+    _nameController.dispose();
     _emailController.dispose();
-    _senhaController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-  void _tentarCadastro() async {
-    if (_nomeController.text.isEmpty || 
+  void _tentarSignUp() async {
+    if (_nameController.text.isEmpty || 
         _emailController.text.isEmpty || 
-        _senhaController.text.isEmpty) {
-      widget.onCadastroError('Por favor, preencha todos os campos.');
+        _passwordController.text.isEmpty) {
+      widget.onSignUpError('Por favor, preencha todos os campos.');
       return;
     }
 
-    if (_senhaController.text.length < 6) {
-      widget.onCadastroError('A senha deve ter pelo menos 6 caracteres.');
+    if (_passwordController.text.length < 6) {
+      widget.onSignUpError('A senha deve ter pelo menos 6 caracteres.');
       return;
     }
 
@@ -46,13 +46,13 @@ class _PerfilCadastroViewState extends State<PerfilCadastroView> {
     });
 
     try {
-      await widget.onCadastroSuccess(
-        _nomeController.text,
+      await widget.onSignUpSuccess(
+        _nameController.text,
         _emailController.text,
-        _senhaController.text,
+        _passwordController.text,
       );
     } catch (e) {
-      widget.onCadastroError('Erro ao fazer cadastro: $e');
+      widget.onSignUpError('Erro ao fazer cadastro: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -85,7 +85,6 @@ class _PerfilCadastroViewState extends State<PerfilCadastroView> {
               ),
             ],
           ),
-          
           Positioned(
             left: 32,
             right: 32,
@@ -100,7 +99,6 @@ class _PerfilCadastroViewState extends State<PerfilCadastroView> {
               textAlign: TextAlign.center,
             ),
           ),
-
           Positioned(
             left: 32,
             right: 32,
@@ -115,8 +113,6 @@ class _PerfilCadastroViewState extends State<PerfilCadastroView> {
               textAlign: TextAlign.center,
             ),
           ),
-          
-          // Formulário de cadastro - sobreposto na área de transição
           Positioned(
             left: 32,
             right: 32,
@@ -148,7 +144,7 @@ class _PerfilCadastroViewState extends State<PerfilCadastroView> {
                     ),
                     const SizedBox(height: 8),
                     TextField(
-                      controller: _nomeController,
+                      controller: _nameController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -181,7 +177,7 @@ class _PerfilCadastroViewState extends State<PerfilCadastroView> {
                     ),
                     const SizedBox(height: 8),
                     TextField(
-                      controller: _senhaController,
+                      controller: _passwordController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -196,8 +192,6 @@ class _PerfilCadastroViewState extends State<PerfilCadastroView> {
               ),
             ),
           ),
-          
-          // Botão Continuar na parte inferior
           Positioned(
             left: 32,
             right: 32,
@@ -206,7 +200,7 @@ class _PerfilCadastroViewState extends State<PerfilCadastroView> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: _carregando ? null : _tentarCadastro,
+                onPressed: _carregando ? null : _tentarSignUp,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4F82B2),
                   elevation: 0,

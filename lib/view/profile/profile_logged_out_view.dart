@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class PerfilDeslogadoView extends StatelessWidget {
+class ProfileLoggedOutView extends StatelessWidget {
   final VoidCallback onLoginPressed;
-  final VoidCallback onCadastroPressed;
+  final VoidCallback onSignUpPressed;
 
-  const PerfilDeslogadoView({
+  const ProfileLoggedOutView({
     super.key,
     required this.onLoginPressed,
-    required this.onCadastroPressed,
+    required this.onSignUpPressed,
   });
 
   @override
@@ -103,7 +103,7 @@ class PerfilDeslogadoView extends StatelessWidget {
                   
                   Expanded(
                     child: TextButton(
-                      onPressed: onCadastroPressed,
+                      onPressed: onSignUpPressed,
                       style: TextButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         padding: EdgeInsets.zero,

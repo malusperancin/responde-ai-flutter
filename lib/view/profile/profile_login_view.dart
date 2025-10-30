@@ -1,49 +1,49 @@
 import 'package:flutter/material.dart';
 
-class PerfilLoginView extends StatefulWidget {
-  final Function(String email, String senha) onLoginSuccess;
-  final Function(String mensagem) onLoginError;
+class ProfileLoginView extends StatefulWidget {
+  final Function(String email, String password) onLoginSuccess;
+  final Function(String message) onLoginError;
 
-  const PerfilLoginView({
+  const ProfileLoginView({
     super.key,
     required this.onLoginSuccess,
     required this.onLoginError,
   });
 
   @override
-  State<PerfilLoginView> createState() => _PerfilLoginViewState();
+  State<ProfileLoginView> createState() => _ProfileLoginViewState();
 }
 
-class _PerfilLoginViewState extends State<PerfilLoginView> {
+class _ProfileLoginViewState extends State<ProfileLoginView> {
   final _emailController = TextEditingController();
-  final _senhaController = TextEditingController();
-  bool _carregando = false;
+  final _passwordController = TextEditingController();
+  bool _loading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
-    _senhaController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-  void _tentarLogin() async {
-    if (_emailController.text.isEmpty || _senhaController.text.isEmpty) {
+  void _tryLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       widget.onLoginError('Por favor, preencha todos os campos.');
       return;
     }
 
     setState(() {
-      _carregando = true;
+      _loading = true;
     });
 
     try {
-      await widget.onLoginSuccess(_emailController.text, _senhaController.text);
+      await widget.onLoginSuccess(_emailController.text, _passwordController.text);
     } catch (e) {
       widget.onLoginError('Erro ao fazer login: $e');
     } finally {
       if (mounted) {
         setState(() {
-          _carregando = false;
+          _loading = false;
         });
       }
     }
@@ -145,7 +145,7 @@ class _PerfilLoginViewState extends State<PerfilLoginView> {
                   ),
                   const SizedBox(height: 8),
                   TextField(
-                    controller: _senhaController,
+                    controller: _passwordController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -167,7 +167,7 @@ class _PerfilLoginViewState extends State<PerfilLoginView> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: _carregando ? null : _tentarLogin,
+                onPressed: _loading ? null : _tryLogin,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4F82B2),
                   elevation: 0,
@@ -176,7 +176,7 @@ class _PerfilLoginViewState extends State<PerfilLoginView> {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: _carregando 
+                child: _loading 
                   ? const CircularProgressIndicator(color: Colors.white)
                   : const Text(
                       'Continuar',

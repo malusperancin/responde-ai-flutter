@@ -1,2 +1,1 @@
-// View da página inicial
-export 'apresentacao_view.dart';
+export 'presentation_view.dart';

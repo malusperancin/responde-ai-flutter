@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'bloc/pergunta_bloc.dart';
+import 'package:responde_ai/bloc/auth_bloc.dart';
+import 'bloc/question_bloc.dart';
 import 'view/view.dart';
-import 'firebase_options_dev.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: FirebaseOptions(
+      apiKey: "<YOUR_API_KEY_HERE>",
+      authDomain: "responde-ai-si700.firebaseapp.com",
+      projectId: "responde-ai-si700",
+      storageBucket: "responde-ai-si700.firebasestorage.app",
+      messagingSenderId: "<YOUR_MESSAGING_SENDER_ID_HERE>",
+      appId: "<YOUR_APP_ID_HERE>",
+      measurementId: "<YOUR_MEASUREMENT_ID_HERE>",
+    ),
   );
   runApp(const RespondeAiApp());
 }
@@ -20,13 +28,14 @@ class RespondeAiApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => PerguntaBloc()..add(LoadPerguntasEvent()),
-      child: MaterialApp(
-        title: 'Responde Aí',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
+      create: (context) => AuthBloc(),
+      child: BlocProvider(
+        create: (context) => QuestionBloc()..add(LoadQuestionsEvent()),
+        child: MaterialApp(
+          title: 'Responde Aí',
+          theme: ThemeData(primarySwatch: Colors.blue),
+          home: const AppNavigator(),
         ),
-        home: const AppNavigator(),
       ),
     );
   }
@@ -44,10 +53,10 @@ class _AppNavigatorState extends State<AppNavigator> {
 
   List<Widget> get _widgetOptions {
     return const <Widget>[
-      ApresentacaoView(),
-      PerguntasView(),
-      MinhasPerguntasView(),
-      PerfilView(),
+      PresentationView(),
+      QuestionsView(),
+      MyQuestionsView(),
+      ProfileView(),
     ];
   }
 
@@ -78,7 +87,11 @@ class _AppNavigatorState extends State<AppNavigator> {
               onPressed: () => _onItemTapped(0),
             ),
             IconButton(
-              icon: const Icon(Icons.question_answer, color: Colors.white, size: 30),
+              icon: const Icon(
+                Icons.question_answer,
+                color: Colors.white,
+                size: 30,
+              ),
               onPressed: () => _onItemTapped(1),
             ),
             IconButton(

@@ -1,30 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../../control/usuario_controller.dart';
+import '../../../provider/firestore_provider.dart';
 
-class RespostaWidget extends StatelessWidget {
-  final int usuarioId;
-  final String data;
-  final String hora;
-  final String resposta;
+class AnswerWidget extends StatelessWidget {
+  final String userId;
+  final String date;
+  final String time;
+  final String answer;
 
-  const RespostaWidget({
+  const AnswerWidget({
     super.key,
-    required this.usuarioId,
-    required this.data,
-    required this.hora,
-    required this.resposta,
+    required this.userId,
+    required this.date,
+    required this.time,
+    required this.answer,
   });
-
-  String _getNomeUsuario() {
-    final usuarioController = UsuarioController();
-    final usuarios = usuarioController.todosUsuarios;
-    try {
-      final usuario = usuarios.firstWhere((u) => u.id == usuarioId);
-      return usuario.nome;
-    } catch (e) {
-      return 'Usuário não encontrado';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,16 +32,22 @@ class RespostaWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                _getNomeUsuario(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: Colors.white,
-                ),
+              FutureBuilder(
+                future: FirestoreProvider.helper.getUserName(userId),
+                builder: (context, snapshot) {
+                  final userName = snapshot.data ?? 'Carregando...';
+                  return Text(
+                    userName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: Colors.white,
+                    ),
+                  );
+                },
               ),
               Text(
-                '$data   $hora',
+                '$date   $time',
                 style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ],
@@ -66,7 +61,7 @@ class RespostaWidget extends StatelessWidget {
             ),
             padding: const EdgeInsets.all(12),
             child: Text(
-              resposta,
+              answer,
               style: const TextStyle(fontSize: 14),
             ),
           ),

@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
-import '../../../model/pergunta.dart';
-import 'pergunta_widget.dart';
-import 'resposta_widget.dart';
-import 'campo_resposta_widget.dart';
+import '../../../model/question.dart';
+import 'question_widget.dart';
+import 'answer_widget.dart';
+import 'answer_field_widget.dart';
 import '../../shared/shared.dart';
 
-class PerguntaRespostaCard extends StatefulWidget {
-  final Pergunta pergunta;
-  final Function(String)? onResponder;
+class QuestionAnswerCard extends StatefulWidget {
+  final Question question;
+  final Function(String)? onAnswer;
 
-  const PerguntaRespostaCard({
+  const QuestionAnswerCard({
     super.key,
-    required this.pergunta,
-    this.onResponder,
+    required this.question,
+    this.onAnswer,
   });
 
   @override
-  State<PerguntaRespostaCard> createState() => _PerguntaRespostaCardState();
+  State<QuestionAnswerCard> createState() => _QuestionAnswerCardState();
 }
 
-class _PerguntaRespostaCardState extends State<PerguntaRespostaCard> {
-  bool _expandir = false;
+class _QuestionAnswerCardState extends State<QuestionAnswerCard> {
+  bool _expanded = false;
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -29,50 +29,50 @@ class _PerguntaRespostaCardState extends State<PerguntaRespostaCard> {
     super.dispose();
   }
 
-  void _onResponderPressed() {
+  void _onAnswerPressed() {
     setState(() {
-      _expandir = !_expandir;
+      _expanded = !_expanded;
     });
   }
 
-  void _onEnviarPressed() async {
-    final resposta = _controller.text.trim();
-    if (resposta.isEmpty) {
-      ModalPersonalizado.mostrar(
+  void _onSubmitPressed() async {
+    final answer = _controller.text.trim();
+    if (answer.isEmpty) {
+      CustomModal.show(
         context,
-        texto: 'Por favor, digite uma resposta',
-        textoBotao: 'OK',
+        text: 'Por favor, digite uma resposta',
+        buttonText: 'OK',
       );
       return;
     }
 
     try {
-      if (widget.onResponder != null) {
-        widget.onResponder!(resposta);
-        ModalPersonalizado.mostrar(
+      if (widget.onAnswer != null) {
+        widget.onAnswer!(answer);
+        CustomModal.show(
           context,
-          texto: 'Resposta enviada com sucesso!',
-          textoBotao: 'OK',
+          text: 'Resposta enviada com sucesso!',
+          buttonText: 'OK',
         );
       }
       setState(() {
-        _expandir = false;
+        _expanded = false;
         _controller.clear();
       });
     } catch (e) {
-      ModalPersonalizado.mostrar(
+      CustomModal.show(
         context,
-        texto: 'Erro ao enviar resposta. Tente novamente.',
-        textoBotao: 'OK',
+        text: 'Erro ao enviar resposta. Tente novamente.',
+        buttonText: 'OK',
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool respondida = widget.pergunta.resposta != null && widget.pergunta.resposta!.isNotEmpty;
+    final bool answered = widget.question.answer != null && widget.question.answer!.isNotEmpty;
     
-    if (!respondida) {
+    if (!answered) {
       return Card(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -81,13 +81,13 @@ class _PerguntaRespostaCardState extends State<PerguntaRespostaCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PerguntaWidget(
-                usuarioId: widget.pergunta.usuarioId,
-                data: widget.pergunta.data,
-                hora: widget.pergunta.hora,
-                texto: widget.pergunta.descricao,
+              QuestionWidget(
+                userId: widget.question.userId,
+                date: widget.question.date,
+                time: widget.question.time,
+                text: widget.question.description,
               ),
-              if (!_expandir && widget.onResponder != null) // botão responder
+              if (!_expanded && widget.onAnswer != null)
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -113,7 +113,7 @@ class _PerguntaRespostaCardState extends State<PerguntaRespostaCard> {
                           ),
                           elevation: 4,
                         ),
-                        onPressed: _onResponderPressed,
+                        onPressed: _onAnswerPressed,
                         child: const Padding(
                           padding: EdgeInsets.symmetric(vertical: 6),
                           child: Text(
@@ -125,7 +125,7 @@ class _PerguntaRespostaCardState extends State<PerguntaRespostaCard> {
                     ),
                   ),
                 ),
-              if (_expandir) // deve exibir o campo de resposta
+              if (_expanded)
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -137,9 +137,9 @@ class _PerguntaRespostaCardState extends State<PerguntaRespostaCard> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    child: CampoRespostaWidget(
+                    child: AnswerFieldWidget(
                       controller: _controller,
-                      onEnviar: _onEnviarPressed,
+                      onSubmit: _onSubmitPressed,
                     ),
                   ),
                 ),
@@ -148,23 +148,22 @@ class _PerguntaRespostaCardState extends State<PerguntaRespostaCard> {
         ),
       );
     } else {
-      // Dois cards juntos: pergunta + resposta
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            PerguntaWidget(
-              usuarioId: widget.pergunta.usuarioId,
-              data: widget.pergunta.data,
-              hora: widget.pergunta.hora,
-              texto: widget.pergunta.descricao,
+            QuestionWidget(
+              userId: widget.question.userId,
+              date: widget.question.date,
+              time: widget.question.time,
+              text: widget.question.description,
             ),
-            RespostaWidget(
-              usuarioId: widget.pergunta.respondidaPorUsuarioId ?? widget.pergunta.usuarioId,
-              data: widget.pergunta.dataResposta ?? widget.pergunta.data,
-              hora: widget.pergunta.horaResposta ?? widget.pergunta.hora,
-              resposta: widget.pergunta.resposta!,
+            AnswerWidget(
+              userId: widget.question.answeredByUserId ?? widget.question.userId,
+              date: widget.question.answerDate ?? widget.question.date,
+              time: widget.question.answerTime ?? widget.question.time,
+              answer: widget.question.answer!,
             ),
           ],
         ),

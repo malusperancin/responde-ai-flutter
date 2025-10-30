@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 
-class ModalPersonalizado extends StatelessWidget {
-  final String texto;
-  final String textoBotao;
+class CustomModal extends StatelessWidget {
+  final String text;
+  final String buttonText;
   final VoidCallback? onPressed;
 
-  const ModalPersonalizado({
+  const CustomModal({
     super.key,
-    required this.texto,
-    required this.textoBotao,
+    required this.text,
+    required this.buttonText,
     this.onPressed,
   });
 
-  static void mostrar(
+  static void show(
     BuildContext context, {
-    required String texto,
-    required String textoBotao,
+    required String text,
+    required String buttonText,
     VoidCallback? onPressed,
   }) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return ModalPersonalizado(
-          texto: texto,
-          textoBotao: textoBotao,
+        return CustomModal(
+          text: text,
+          buttonText: buttonText,
           onPressed: onPressed ?? () => Navigator.of(context).pop(),
         );
       },
@@ -40,12 +40,11 @@ class ModalPersonalizado extends StatelessWidget {
       backgroundColor: const Color(0xFFA67F52),
       child: Container(
         padding: const EdgeInsets.all(14),
-        
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              texto,
+              text,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -65,7 +64,7 @@ class ModalPersonalizado extends StatelessWidget {
                   elevation: 0
                 ),
                 child: Text(
-                  textoBotao,
+                  buttonText,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white
